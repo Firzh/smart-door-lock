@@ -1,0 +1,19 @@
+# OS & Editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Environment / local secrets
+.env
+.env.local
+.env.*.local
+
+# Logs & temp
+*.log
+npm-debug.log*
+tmp/
+temp/

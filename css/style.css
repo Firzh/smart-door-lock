@@ -1,0 +1,48 @@
+@import url("./variables.css");
+@import url("./layout.css");
+@import url("./components.css");
+@import url("./dashboard.css");
+@import url("./cards.css");
+@import url("./responsive.css");
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.link-muted {
+  color: var(--color-text-muted);
+}
+
+.link-muted:hover {
+  color: var(--color-primary);
+}
