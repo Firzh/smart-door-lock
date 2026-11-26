@@ -19,7 +19,7 @@ export const CONFIG = {
   APP: {
     REQUIRE_AUTH: true,
     // Set false saat production untuk mematikan log checkpoint debug di Console
-    DEBUG: true,
+    DEBUG: false,
     UID_MIN_LENGTH: 8,
     UID_MAX_LENGTH: 20,
   },
