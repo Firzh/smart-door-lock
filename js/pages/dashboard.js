@@ -43,7 +43,6 @@ export function setDeviceStatus(nextStatus, timestamp = new Date().toISOString()
   }
   if (normalized === 'UNKNOWN') {
     deviceStatus = 'UNKNOWN';
-    lastSeenAt = null;
     return true;
   }
   return false;
@@ -74,14 +73,18 @@ function getDeviceDisplay(status, deviceId, seenAt) {
       value: 'Offline',
       badgeText: 'OFFLINE',
       badgeType: 'danger',
-      subtitle: `ID: ${deviceId} • Perangkat terputus`,
+      subtitle: seenAt
+        ? `ID: ${deviceId} • Terputus (terakhir aktif: ${formatDateTime(seenAt)})`
+        : `ID: ${deviceId} • Perangkat terputus`,
     };
   }
   return {
     value: 'Belum diketahui',
     badgeText: 'MENUNGGU ESP32',
     badgeType: 'neutral',
-    subtitle: `ID: ${deviceId} • Belum ada sinyal dari perangkat`,
+    subtitle: seenAt
+      ? `ID: ${deviceId} • Terakhir aktif: ${formatDateTime(seenAt)}`
+      : `ID: ${deviceId} • Belum ada sinyal dari perangkat`,
   };
 }
 
