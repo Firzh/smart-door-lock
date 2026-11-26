@@ -1,43 +1,56 @@
 :root {
-  /* Color Palette */
-  --color-bg: #f1f5f9;
+  /* Color Palette — Deep Navy, Royal Blue, Ice Blue & Semantic Tints */
+  --color-bg: #f4f7fb;
   --color-surface: #ffffff;
   --color-surface-muted: #f8fafc;
-  --color-sidebar: #0f172a;
-  --color-sidebar-hover: #1e293b;
-  --color-sidebar-active: #2563eb;
-  --color-sidebar-text: #cbd5e1;
+  --color-table-head: #e8eef7;
+
+  --color-navy: #1e3a5f;
+  --color-navy-dark: #162c49;
+  --color-sidebar: #1e3a5f;
+  --color-sidebar-hover: rgba(255, 255, 255, 0.09);
+  --color-sidebar-active: rgba(255, 255, 255, 0.16);
+  --color-sidebar-text: #dbe6f5;
 
   --color-text: #0f172a;
   --color-text-muted: #64748b;
-  --color-border: #e2e8f0;
+  --color-border: #dce4ef;
 
   /* Brand & Semantic Colors */
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
+  --color-primary: #1565c0;
+  --color-primary-hover: #0d47a1;
+  --ring-primary: rgba(21, 101, 192, 0.16);
+
   --color-success: #16a34a;
-  --color-success-bg: #dcfce7;
-  --color-success-text: #166534;
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #22c55e;
+  --color-success-text: #15803d;
+
   --color-danger: #dc2626;
-  --color-danger-bg: #fee2e2;
-  --color-danger-text: #991b1b;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #ef4444;
+  --color-danger-text: #b91c1c;
+
   --color-warning: #d97706;
-  --color-warning-bg: #fef3c7;
-  --color-warning-text: #92400e;
-  --color-neutral-bg: #e2e8f0;
-  --color-neutral-text: #475569;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #f59e0b;
+  --color-warning-text: #b45309;
+
+  --color-neutral-bg: #e8eef7;
+  --color-neutral-border: #cbd5e1;
+  --color-neutral-text: #334155;
 
   /* Typography */
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Layout & Spacing */
-  --sidebar-width: 250px;
+  --sidebar-width: 256px;
   --navbar-height: 64px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 2px 8px rgba(30, 58, 95, 0.05);
+  --shadow-md: 0 8px 24px rgba(30, 58, 95, 0.10);
   --transition: 0.2s ease;
 }

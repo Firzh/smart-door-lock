@@ -4,7 +4,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  padding: 1.25rem;
+  padding: 1.35rem;
 }
 
 .panel-header {
@@ -16,8 +16,9 @@
 }
 
 .panel-title {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--color-navy);
 }
 
 /* Buttons */
@@ -26,13 +27,21 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.55rem 1rem;
+  padding: 0.58rem 1.05rem;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color var(--transition), border-color var(--transition), opacity var(--transition);
+  transition: background-color var(--transition), border-color var(--transition), transform var(--transition), opacity var(--transition);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn:disabled {
@@ -60,17 +69,18 @@
 }
 
 .btn-outline {
-  background-color: transparent;
+  background-color: var(--color-surface);
   border-color: var(--color-border);
-  color: var(--color-text);
+  color: var(--color-navy);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background-color: var(--color-surface-muted);
+  background-color: var(--color-table-head);
+  border-color: var(--color-neutral-border);
 }
 
 .btn-sm {
-  padding: 0.35rem 0.65rem;
+  padding: 0.38rem 0.72rem;
   font-size: 0.8rem;
 }
 
@@ -83,66 +93,74 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.6rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
 .badge-success {
   background-color: var(--color-success-bg);
   color: var(--color-success-text);
+  border: 1px solid rgba(34, 197, 94, 0.35);
 }
 
 .badge-danger {
   background-color: var(--color-danger-bg);
   color: var(--color-danger-text);
+  border: 1px solid rgba(239, 68, 68, 0.35);
 }
 
 .badge-warning {
   background-color: var(--color-warning-bg);
   color: var(--color-warning-text);
+  border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
 .badge-neutral {
   background-color: var(--color-neutral-bg);
   color: var(--color-neutral-text);
+  border: 1px solid var(--color-neutral-border);
 }
 
 /* Forms */
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .form-group label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-navy);
 }
 
 .form-control {
   width: 100%;
-  padding: 0.55rem 0.75rem;
+  padding: 0.58rem 0.8rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text);
   font-size: 0.9rem;
-  transition: border-color var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .form-control:focus {
   outline: none;
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 /* Tables */
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
 }
 
 .data-table {
@@ -154,15 +172,19 @@
 .data-table th,
 .data-table td {
   text-align: left;
-  padding: 0.75rem 0.85rem;
+  padding: 0.78rem 0.9rem;
   border-bottom: 1px solid var(--color-border);
 }
 
 .data-table th {
-  font-weight: 600;
-  color: var(--color-text-muted);
-  background-color: var(--color-surface-muted);
+  font-weight: 700;
+  color: var(--color-navy);
+  background-color: var(--color-table-head);
   white-space: nowrap;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .data-table tbody tr:hover {
@@ -185,17 +207,17 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  max-width: 340px;
+  max-width: 360px;
 }
 
 .toast {
-  padding: 0.75rem 1rem;
+  padding: 0.8rem 1.05rem;
   border-radius: var(--radius-sm);
   color: #ffffff;
   font-size: 0.875rem;
   font-weight: 500;
   box-shadow: var(--shadow-md);
-  background-color: var(--color-sidebar);
+  background-color: var(--color-navy);
 }
 
 .toast-success {

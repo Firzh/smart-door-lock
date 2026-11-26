@@ -1,6 +1,6 @@
 const NAV_ITEMS = [
   { route: 'dashboard', label: 'Dashboard' },
-  { route: 'manage-cards', label: 'Kelola Kartu RFID' },
+  { route: 'manage-cards', label: 'Kelola Kartu' },
   { route: 'access-logs', label: 'Riwayat Akses' },
 ];
 
@@ -24,15 +24,15 @@ export function renderSidebar(container, activeRoute, onNavigate, onLogout) {
       <div class="sidebar-brand">
         <span class="brand-mark">SDL</span>
         <div>
-          <div style="font-weight: 700; font-size: 0.95rem;">Smart Door Lock</div>
-          <div style="font-size: 0.75rem; opacity: 0.7;">ESP32 + MQTT + Supabase</div>
+          <div class="sidebar-brand-title">Smart Door Lock RFID</div>
+          <div class="sidebar-brand-subtitle">ESP32 • EMQX • Supabase</div>
         </div>
       </div>
       <nav class="sidebar-nav">${navLinks}</nav>
     </div>
 
     <div class="sidebar-footer">
-      <button id="logout-btn" type="button" class="btn btn-outline btn-block" style="color: #cbd5e1; border-color: rgba(255,255,255,0.16);">
+      <button id="logout-btn" type="button" class="btn btn-outline btn-block btn-sidebar-logout">
         Keluar
       </button>
     </div>

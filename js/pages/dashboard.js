@@ -46,12 +46,24 @@ export function setDeviceStatus(nextStatus, timestamp = new Date().toISOString()
 
 function getDoorDisplay(state) {
   if (state === 'UNLOCKED') {
-    return { value: 'Terbuka', badgeText: 'UNLOCKED', badgeType: 'warning' };
+    return {
+      value: 'TERBUKA',
+      stateClass: 'is-unlocked',
+      meta: 'Solenoid aktif (auto-lock 5 dtk)',
+    };
   }
   if (state === 'LOCKED') {
-    return { value: 'Terkunci', badgeText: 'LOCKED', badgeType: 'success' };
+    return {
+      value: 'TERKUNCI',
+      stateClass: 'is-locked',
+      meta: 'Pintu dalam kondisi aman',
+    };
   }
-  return { value: 'Belum diketahui', badgeText: 'MENUNGGU STATUS', badgeType: 'neutral' };
+  return {
+    value: 'BELUM DIKETAHUI',
+    stateClass: 'is-neutral',
+    meta: 'Menunggu respons status ESP32',
+  };
 }
 
 function getDeviceDisplay(status, deviceId, seenAt) {
@@ -59,45 +71,40 @@ function getDeviceDisplay(status, deviceId, seenAt) {
 
   if (status === 'ONLINE') {
     return {
-      value: 'Online',
-      badgeText: 'ONLINE',
-      badgeType: 'success',
-      subtitle: `ID: ${deviceId} • Aktif: ${lastSeenText || '-'}`,
+      value: 'ONLINE',
+      stateClass: 'is-online',
+      meta: `ID: ${deviceId} • Aktif: ${lastSeenText || '-'}`,
     };
   }
   if (status === 'CHECKING') {
     return {
-      value: 'Memeriksa...',
-      badgeText: 'PING...',
-      badgeType: 'warning',
-      subtitle: `ID: ${deviceId} • Menunggu balasan ESP32...`,
+      value: 'MEMERIKSA...',
+      stateClass: 'is-checking',
+      meta: `ID: ${deviceId} • Menunggu balasan PING...`,
     };
   }
   if (status === 'UNRESPONSIVE') {
     return {
-      value: 'Offline / Tidak merespons',
-      badgeText: 'TIDAK MERESPONS',
-      badgeType: 'danger',
-      subtitle: lastSeenText
-        ? `ID: ${deviceId} • Tidak ada balasan PING 5 dtk (terakhir aktif: ${lastSeenText})`
+      value: 'TIDAK MERESPONS',
+      stateClass: 'is-offline',
+      meta: lastSeenText
+        ? `ID: ${deviceId} • Timeout 5 dtk (terakhir: ${lastSeenText})`
         : `ID: ${deviceId} • Tidak ada balasan PING (5 dtk)`,
     };
   }
   if (status === 'OFFLINE') {
     return {
-      value: 'Offline',
-      badgeText: 'OFFLINE',
-      badgeType: 'danger',
-      subtitle: lastSeenText
-        ? `ID: ${deviceId} • Terputus (terakhir aktif: ${lastSeenText})`
+      value: 'OFFLINE',
+      stateClass: 'is-offline',
+      meta: lastSeenText
+        ? `ID: ${deviceId} • Terputus (terakhir: ${lastSeenText})`
         : `ID: ${deviceId} • Perangkat terputus`,
     };
   }
   return {
-    value: 'Belum diketahui',
-    badgeText: 'MENUNGGU ESP32',
-    badgeType: 'neutral',
-    subtitle: lastSeenText
+    value: 'BELUM DIKETAHUI',
+    stateClass: 'is-neutral',
+    meta: lastSeenText
       ? `ID: ${deviceId} • Terakhir aktif: ${lastSeenText}`
       : `ID: ${deviceId} • Belum ada sinyal dari perangkat`,
   };
@@ -154,21 +161,7 @@ export async function renderDashboard(container, runtimeConfig = null, actions =
       ? 'Gagal membaca data (periksa RLS/koneksi)'
       : `Perangkat: ${deviceId}`;
 
-  const statsCardsHtml = [
-    createStatusCard({
-      title: 'Status Pintu',
-      value: doorDisplay.value,
-      subtitle: topics.STATUS ? `Topik: ${topics.STATUS}` : 'Topik status belum dimuat',
-      badgeText: doorDisplay.badgeText,
-      badgeType: doorDisplay.badgeType,
-    }),
-    createStatusCard({
-      title: 'Status Perangkat ESP32',
-      value: deviceDisplay.value,
-      subtitle: deviceDisplay.subtitle,
-      badgeText: deviceDisplay.badgeText,
-      badgeType: deviceDisplay.badgeType,
-    }),
+  const secondaryMetricsHtml = [
     createStatusCard({
       title: 'Koneksi MQTT',
       value: mqttDisplay.value,
@@ -197,27 +190,34 @@ export async function renderDashboard(container, runtimeConfig = null, actions =
   const commandTopicLabel = topics.COMMAND || 'Belum dimuat';
 
   container.innerHTML = `
-    <section class="stats-grid" aria-label="Ringkasan status">
-      ${statsCardsHtml}
+    <section class="dashboard-hero-grid" aria-label="Status utama dan kontrol pintu">
+      <article class="hero-status-card ${deviceDisplay.stateClass}">
+        <span class="hero-card-label">Perangkat</span>
+        <div class="hero-card-value">${escapeHtml(deviceDisplay.value)}</div>
+        <div class="hero-card-meta">${escapeHtml(deviceDisplay.meta)}</div>
+        <button id="btn-ping-device" type="button" class="btn btn-outline btn-sm">Cek Status (PING)</button>
+      </article>
+
+      <article class="hero-status-card ${doorDisplay.stateClass}">
+        <span class="hero-card-label">Status kunci</span>
+        <div class="hero-card-value">${escapeHtml(doorDisplay.value)}</div>
+        <div class="hero-card-meta">${escapeHtml(doorDisplay.meta)}</div>
+        <div class="hero-card-meta">Topik: <code>${escapeHtml(topics.STATUS || '-')}</code></div>
+      </article>
+
+      <button id="btn-unlock-door" type="button" class="hero-action-btn">
+        <span class="hero-action-title">BUKA PINTU</span>
+        <span class="hero-action-subtitle">Kirim UNLOCK ke ${escapeHtml(commandTopicLabel)}</span>
+      </button>
     </section>
 
-    <section class="panel control-panel">
-      <div class="control-info">
-        <h2>Kontrol Pintu Jarak Jauh</h2>
-        <p class="text-muted">
-          Kirim perintah JSON <code>{"command":"UNLOCK"}</code> atau <code>{"command":"PING"}</code> ke ESP32 melalui topik
-          <code>${escapeHtml(commandTopicLabel)}</code>. Pintu akan terkunci otomatis setelah 5 detik.
-        </p>
-      </div>
-      <div class="control-actions">
-        <button id="btn-unlock-door" type="button" class="btn btn-success">Buka Pintu (UNLOCK)</button>
-        <button id="btn-ping-device" type="button" class="btn btn-outline">Cek Status (PING)</button>
-      </div>
+    <section class="metrics-strip" aria-label="Ringkasan koneksi dan statistik">
+      ${secondaryMetricsHtml}
     </section>
 
     <section class="panel">
       <div class="panel-header">
-        <h2 class="panel-title">Aktivitas Akses Terbaru</h2>
+        <h2 class="panel-title">Riwayat Akses</h2>
         <a href="#access-logs" class="btn btn-outline btn-sm">Lihat Semua</a>
       </div>
       ${renderAccessTable(logsRes.data, logsEmptyMessage)}
@@ -225,9 +225,10 @@ export async function renderDashboard(container, runtimeConfig = null, actions =
   `;
 
   const unlockBtn = container.querySelector('#btn-unlock-door');
+  const unlockTitleEl = unlockBtn?.querySelector('.hero-action-title');
   unlockBtn?.addEventListener('click', async () => {
     unlockBtn.disabled = true;
-    unlockBtn.textContent = 'Mengirim...';
+    if (unlockTitleEl) unlockTitleEl.textContent = 'MENGIRIM...';
 
     try {
       const result = await mqttService.publish(topics.COMMAND, {
@@ -241,7 +242,7 @@ export async function renderDashboard(container, runtimeConfig = null, actions =
       }
     } finally {
       unlockBtn.disabled = false;
-      unlockBtn.textContent = 'Buka Pintu (UNLOCK)';
+      if (unlockTitleEl) unlockTitleEl.textContent = 'BUKA PINTU';
     }
   });
 

@@ -1,5 +1,14 @@
 @media (max-width: 1024px) {
-  .stats-grid {
+  .dashboard-hero-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-action-btn {
+    grid-column: 1 / -1;
+    min-height: 96px;
+  }
+
+  .metrics-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -39,11 +48,14 @@
     padding: 1rem;
   }
 
-  .stats-grid {
+  .dashboard-hero-grid,
+  .metrics-strip,
+  .card-form-grid {
     grid-template-columns: 1fr;
   }
 
-  .card-form-grid {
-    grid-template-columns: 1fr;
+  .hero-status-card,
+  .hero-action-btn {
+    min-height: 120px;
   }
 }

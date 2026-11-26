@@ -78,27 +78,28 @@ export async function renderManageCards(container) {
   container.innerHTML = `
     <section class="panel">
       <div class="panel-header">
-        <h2 class="panel-title">Tambah Kartu RFID Baru</h2>
+        <h2 class="panel-title">Tambah Kartu</h2>
       </div>
       <form id="add-card-form" class="card-form-grid">
         <div class="form-group">
-          <label for="card-uid">UID Kartu (Hex)</label>
+          <label for="card-uid">UID (hex)</label>
           <input id="card-uid" name="uid" type="text" class="form-control" placeholder="Contoh: A1B2C3D4" required />
         </div>
         <div class="form-group">
-          <label for="owner-name">Nama Pemilik</label>
+          <label for="owner-name">Nama pemilik</label>
           <input id="owner-name" name="owner_name" type="text" class="form-control" placeholder="Contoh: Budi Santoso" required />
         </div>
-        <button id="add-card-submit" type="submit" class="btn btn-primary">Simpan Kartu</button>
+        <button id="add-card-submit" type="submit" class="btn btn-primary">Tambah</button>
       </form>
     </section>
 
     <section class="panel">
       <div class="panel-header cards-toolbar">
-        <h2 class="panel-title">Daftar Kartu Terdaftar</h2>
+        <h2 class="panel-title">Daftar Kartu</h2>
         <button id="refresh-cards-btn" type="button" class="btn btn-outline btn-sm">Muat Ulang</button>
       </div>
       ${renderCardsTable(cards, configured, error)}
+      <p class="helper-note">UID kartu yang ditolak tercatat pada Riwayat Akses dan dapat disalin ke formulir di atas.</p>
     </section>
   `;
 
@@ -144,7 +145,7 @@ export async function renderManageCards(container) {
       renderManageCards(container);
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Simpan Kartu';
+      submitBtn.textContent = 'Tambah';
     }
   });
 
