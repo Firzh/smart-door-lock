@@ -7,7 +7,7 @@ import { renderNavbar, updateNavbarMqttStatus } from './components/navbar.js';
 import { renderDashboard, setDoorState } from './pages/dashboard.js';
 import { renderManageCards } from './pages/manage-cards.js';
 import { renderAccessLogs } from './pages/access-logs.js';
-import { showToast } from './utils/notifications.js';
+import { debugError, debugLog, showToast } from './utils/notifications.js';
 
 const ROUTES = {
   dashboard: { title: 'Dashboard', render: renderDashboard },
@@ -53,6 +53,7 @@ function scheduleRouteRefresh() {
 }
 
 async function navigate(route) {
+  debugLog('CP-APP-NAV', 'Navigasi route dimulai.', { route });
   const isAllowed = await requireAuth();
   if (!isAllowed) return;
 
@@ -117,7 +118,15 @@ function setupMqttListeners(config) {
   const statusTopic = config?.MQTT?.TOPICS?.STATUS;
   const eventTopic = config?.MQTT?.TOPICS?.EVENT;
 
+  debugLog('CP-APP-MQTT', 'Memulai koneksi MQTT dengan runtime config.', {
+    hasConfig: Boolean(config?.MQTT),
+    brokerUrl: config?.MQTT?.BROKER_URL || null,
+    statusTopic: statusTopic || null,
+    eventTopic: eventTopic || null,
+  });
+
   mqttService.onStatusChange((status) => {
+    debugLog('CP-APP-MQTT', 'Perubahan status MQTT.', { status });
     updateNavbarMqttStatus(status);
     if (currentRoute === 'dashboard') {
       const contentContainer = document.getElementById('app-content');
@@ -126,6 +135,7 @@ function setupMqttListeners(config) {
   });
 
   mqttService.onError((err) => {
+    debugError('CP-APP-MQTT', 'Error koneksi MQTT.', err?.message || err);
     showToast(err?.message || 'Terjadi gangguan koneksi MQTT.', 'error');
   });
 
@@ -141,6 +151,10 @@ function setupMqttListeners(config) {
 }
 
 async function initApp() {
+  debugLog('CP-APP-INIT', 'Inisialisasi aplikasi dashboard dimulai.', {
+    href: window.location.href,
+  });
+
   const isAllowed = await requireAuth();
   if (!isAllowed) return;
 
@@ -159,11 +173,19 @@ async function initApp() {
   const supabase = getSupabaseClient();
   if (supabase) {
     try {
+      debugLog('CP-APP-CONFIG', 'Memuat app_config dari Supabase...');
       runtimeConfig = await loadAppConfig(supabase);
+      debugLog('CP-APP-CONFIG', 'app_config berhasil dimuat.', {
+        deviceId: runtimeConfig.DEVICE_ID,
+        brokerUrl: runtimeConfig.MQTT?.BROKER_URL,
+        topics: runtimeConfig.MQTT?.TOPICS,
+      });
     } catch (err) {
-      console.error('Gagal memuat app_config:', err);
-      showToast(err?.message || 'Gagal memuat konfigurasi app_config.', 'error');
+      debugError('CP-APP-CONFIG', 'Gagal memuat app_config dari Supabase.', err?.message || err);
+      showToast(err?.message || 'Gagal memuat konfigurasi app_config.', 'error', 6000);
     }
+  } else {
+    debugError('CP-APP-CONFIG', 'Supabase client tidak tersedia saat initApp.');
   }
 
   await navigate(getRouteFromHash());
