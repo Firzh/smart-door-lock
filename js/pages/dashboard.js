@@ -37,12 +37,8 @@ export function setDeviceStatus(nextStatus, timestamp = new Date().toISOString()
     lastSeenAt = timestamp;
     return true;
   }
-  if (normalized === 'OFFLINE') {
-    deviceStatus = 'OFFLINE';
-    return true;
-  }
-  if (normalized === 'UNKNOWN') {
-    deviceStatus = 'UNKNOWN';
+  if (['OFFLINE', 'UNRESPONSIVE', 'CHECKING', 'UNKNOWN'].includes(normalized)) {
+    deviceStatus = normalized;
     return true;
   }
   return false;
@@ -59,13 +55,32 @@ function getDoorDisplay(state) {
 }
 
 function getDeviceDisplay(status, deviceId, seenAt) {
+  const lastSeenText = seenAt ? formatDateTime(seenAt) : null;
+
   if (status === 'ONLINE') {
-    const timeText = seenAt ? formatDateTime(seenAt) : '-';
     return {
       value: 'Online',
       badgeText: 'ONLINE',
       badgeType: 'success',
-      subtitle: `ID: ${deviceId} • Aktif: ${timeText}`,
+      subtitle: `ID: ${deviceId} • Aktif: ${lastSeenText || '-'}`,
+    };
+  }
+  if (status === 'CHECKING') {
+    return {
+      value: 'Memeriksa...',
+      badgeText: 'PING...',
+      badgeType: 'warning',
+      subtitle: `ID: ${deviceId} • Menunggu balasan ESP32...`,
+    };
+  }
+  if (status === 'UNRESPONSIVE') {
+    return {
+      value: 'Offline / Tidak merespons',
+      badgeText: 'TIDAK MERESPONS',
+      badgeType: 'danger',
+      subtitle: lastSeenText
+        ? `ID: ${deviceId} • Tidak ada balasan PING 5 dtk (terakhir aktif: ${lastSeenText})`
+        : `ID: ${deviceId} • Tidak ada balasan PING (5 dtk)`,
     };
   }
   if (status === 'OFFLINE') {
@@ -73,8 +88,8 @@ function getDeviceDisplay(status, deviceId, seenAt) {
       value: 'Offline',
       badgeText: 'OFFLINE',
       badgeType: 'danger',
-      subtitle: seenAt
-        ? `ID: ${deviceId} • Terputus (terakhir aktif: ${formatDateTime(seenAt)})`
+      subtitle: lastSeenText
+        ? `ID: ${deviceId} • Terputus (terakhir aktif: ${lastSeenText})`
         : `ID: ${deviceId} • Perangkat terputus`,
     };
   }
@@ -82,8 +97,8 @@ function getDeviceDisplay(status, deviceId, seenAt) {
     value: 'Belum diketahui',
     badgeText: 'MENUNGGU ESP32',
     badgeType: 'neutral',
-    subtitle: seenAt
-      ? `ID: ${deviceId} • Terakhir aktif: ${formatDateTime(seenAt)}`
+    subtitle: lastSeenText
+      ? `ID: ${deviceId} • Terakhir aktif: ${lastSeenText}`
       : `ID: ${deviceId} • Belum ada sinyal dari perangkat`,
   };
 }
@@ -101,7 +116,7 @@ function getMqttDisplay(status) {
   }
 }
 
-export async function renderDashboard(container, runtimeConfig = null) {
+export async function renderDashboard(container, runtimeConfig = null, actions = {}) {
   if (!container) return;
 
   container.innerHTML = `<div class="loading-state">Memuat ringkasan dashboard...</div>`;
@@ -190,12 +205,13 @@ export async function renderDashboard(container, runtimeConfig = null) {
       <div class="control-info">
         <h2>Kontrol Pintu Jarak Jauh</h2>
         <p class="text-muted">
-          Kirim perintah JSON <code>{"command":"UNLOCK"}</code> ke ESP32 melalui topik
+          Kirim perintah JSON <code>{"command":"UNLOCK"}</code> atau <code>{"command":"PING"}</code> ke ESP32 melalui topik
           <code>${escapeHtml(commandTopicLabel)}</code>. Pintu akan terkunci otomatis setelah 5 detik.
         </p>
       </div>
       <div class="control-actions">
         <button id="btn-unlock-door" type="button" class="btn btn-success">Buka Pintu (UNLOCK)</button>
+        <button id="btn-ping-device" type="button" class="btn btn-outline">Cek Status (PING)</button>
       </div>
     </section>
 
@@ -226,6 +242,13 @@ export async function renderDashboard(container, runtimeConfig = null) {
     } finally {
       unlockBtn.disabled = false;
       unlockBtn.textContent = 'Buka Pintu (UNLOCK)';
+    }
+  });
+
+  const pingBtn = container.querySelector('#btn-ping-device');
+  pingBtn?.addEventListener('click', () => {
+    if (typeof actions.onPing === 'function') {
+      actions.onPing();
     }
   });
 }

@@ -11,6 +11,7 @@ class MqttService {
     this.messageListeners = new Set();
     this.statusListeners = new Set();
     this.errorListeners = new Set();
+    this.readyListeners = new Set();
   }
 
   setStatus(nextStatus) {
@@ -72,10 +73,17 @@ class MqttService {
 
     this.client = window.mqtt.connect(BROKER_URL, connectOptions);
 
-    this.client.on('connect', () => {
+    this.client.on('connect', async () => {
       this.setStatus('connected');
-      if (this.topics.STATUS) this.subscribe(this.topics.STATUS);
-      if (this.topics.EVENT) this.subscribe(this.topics.EVENT);
+
+      const [statusSub] = await Promise.all([
+        this.subscribe(this.topics.STATUS),
+        this.subscribe(this.topics.EVENT),
+      ]);
+
+      if (statusSub.ok) {
+        this.readyListeners.forEach((cb) => cb());
+      }
     });
 
     this.client.on('reconnect', () => {
@@ -110,12 +118,20 @@ class MqttService {
   }
 
   subscribe(topic) {
-    if (!this.client || !topic) return;
-    this.client.subscribe(topic, (err) => {
-      if (err) {
-        console.error(`Gagal subscribe ke topik ${topic}:`, err?.message || err);
-        this.emitError(new Error(`Gagal subscribe ke topik ${topic}`));
+    return new Promise((resolve) => {
+      if (!this.client || !topic) {
+        resolve({ ok: false, error: new Error('Topik subscribe tidak valid.') });
+        return;
       }
+      this.client.subscribe(topic, (err) => {
+        if (err) {
+          console.error(`Gagal subscribe ke topik ${topic}:`, err?.message || err);
+          this.emitError(new Error(`Gagal subscribe ke topik ${topic}`));
+          resolve({ ok: false, error: err });
+          return;
+        }
+        resolve({ ok: true, error: null });
+      });
     });
   }
 
@@ -156,6 +172,11 @@ class MqttService {
   onError(callback) {
     this.errorListeners.add(callback);
     return () => this.errorListeners.delete(callback);
+  }
+
+  onReady(callback) {
+    this.readyListeners.add(callback);
+    return () => this.readyListeners.delete(callback);
   }
 }
 

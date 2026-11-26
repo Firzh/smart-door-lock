@@ -76,8 +76,8 @@ Buka `js/config/config.js` dan sesuaikan dengan kredensial deployment Anda:
      - Subscribe: `smartdoor/door01/event`
    - **Jangan** gunakan kredensial MQTT milik ESP32 di frontend.
    - Format payload JSON:
-     - Command: `{"command":"UNLOCK"}`
-     - Status pintu (retained): `{"status":"LOCKED"}` atau `{"status":"UNLOCKED"}` (mendukung LWT perangkat `{"status":"OFFLINE"}` atau `{"online":false}` untuk indikator status ESP32 di dashboard)
+     - Command: `{"command":"UNLOCK"}` dan `{"command":"PING","request_id":"ping-..."}`
+     - Status / PONG: `{"device_status":"ONLINE","door_status":"LOCKED","request_id":"ping-..."}` (atau `{"status":"LOCKED"|"UNLOCKED"}`, serta LWT `{"status":"OFFLINE"}` / `{"online":false}`)
      - Event: `{"event":"RFID_ACCESS_GRANTED","card_uid":"..."}` / `{"event":"RFID_ACCESS_DENIED","card_uid":"..."}`
 
 3. **Autentikasi**
