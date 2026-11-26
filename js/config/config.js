@@ -30,6 +30,13 @@ export const CONFIG = {
 // LOAD CONFIGURATION FROM SUPABASE
 // =====================================
 
+function normalizeMqttWsUrl(rawUrl) {
+  const cleaned = String(rawUrl || '').trim().replace(/\/+$/, '');
+  if (!cleaned) return '';
+  if (/^wss?:\/\//i.test(cleaned)) return cleaned;
+  return `wss://${cleaned}:8084/mqtt`;
+}
+
 export async function loadAppConfig(supabase) {
 
   const { data, error } = await supabase
@@ -76,7 +83,7 @@ export async function loadAppConfig(supabase) {
     DEVICE_ID: settings.device_id,
 
     MQTT: {
-      BROKER_URL: settings.mqtt_ws_url,
+      BROKER_URL: normalizeMqttWsUrl(settings.mqtt_ws_url),
 
       OPTIONS: {
         clientId:

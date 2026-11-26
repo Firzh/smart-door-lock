@@ -27,8 +27,8 @@ export async function renderAccessLogs(container) {
             id="log-search-input"
             type="search"
             class="form-control"
-            placeholder="Cari UID, perangkat, atau alasan..."
-            style="width: 240px;"
+            placeholder="Cari UID, pemilik, perangkat, atau alasan..."
+            style="width: 260px;"
           />
           <select id="log-status-filter" class="form-control" style="width: 170px;">
             <option value="all">Semua Hasil</option>
@@ -57,6 +57,7 @@ export async function renderAccessLogs(container) {
 
     const filtered = allLogs.filter((log) => {
       const uid = String(log.uid || '').toLowerCase();
+      const ownerName = String(log.authorized_cards?.owner_name || '').toLowerCase();
       const deviceId = String(log.device_id || '').toLowerCase();
       const method = String(log.method || '').toLowerCase();
       const reason = String(log.reason || '').toLowerCase();
@@ -65,6 +66,7 @@ export async function renderAccessLogs(container) {
       const matchesQuery =
         !query ||
         uid.includes(query) ||
+        ownerName.includes(query) ||
         deviceId.includes(query) ||
         method.includes(query) ||
         reason.includes(query);

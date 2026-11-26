@@ -15,7 +15,7 @@ export async function getAccessLogs(limit = 100) {
 
   const { data, error } = await client
     .from(CONFIG.TABLES.LOGS)
-    .select('id, card_id, uid, device_id, method, result, reason, created_at')
+    .select('id, card_id, uid, device_id, method, result, reason, created_at, authorized_cards(owner_name)')
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -97,26 +97,4 @@ export async function getDashboardStats() {
     error: firstError,
     configured: true,
   };
-}
-
-export async function getAppConfig() {
-  const client = getSupabaseClient();
-  if (!client) return notConfiguredResult({});
-
-  const { data, error } = await client
-    .from(CONFIG.TABLES.APP_CONFIG)
-    .select('key, value');
-
-  if (error) {
-    return { data: {}, error, configured: true };
-  }
-
-  const configMap = {};
-  (data || []).forEach((row) => {
-    if (row && row.key) {
-      configMap[row.key] = row.value;
-    }
-  });
-
-  return { data: configMap, error: null, configured: true };
 }

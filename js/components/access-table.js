@@ -22,6 +22,7 @@ export function renderAccessTable(logs = [], emptyMessage = 'Belum ada data riwa
       <tr>
         <td>${escapeHtml(formatDateTime(log.created_at))}</td>
         <td><span class="uid-code">${escapeHtml(formatUid(log.uid))}</span></td>
+        <td>${escapeHtml(log.authorized_cards?.owner_name || '-')}</td>
         <td>${escapeHtml(log.device_id || '-')}</td>
         <td>${escapeHtml(log.method || '-')}</td>
         <td>${getResultBadge(log.result)}</td>
@@ -38,6 +39,7 @@ export function renderAccessTable(logs = [], emptyMessage = 'Belum ada data riwa
           <tr>
             <th>Waktu</th>
             <th>UID Kartu</th>
+            <th>Pemilik</th>
             <th>Perangkat</th>
             <th>Metode</th>
             <th>Hasil</th>
