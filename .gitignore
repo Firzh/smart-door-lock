@@ -17,3 +17,5 @@ desktop.ini
 npm-debug.log*
 tmp/
 temp/
+
+*.py
