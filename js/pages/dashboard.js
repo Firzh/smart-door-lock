@@ -2,10 +2,12 @@ import { mqttService } from '../services/mqtt.js';
 import { getAccessLogs, getDashboardStats } from '../services/database.js';
 import { createStatusCard } from '../components/status-card.js';
 import { renderAccessTable } from '../components/access-table.js';
-import { escapeHtml } from '../utils/formatter.js';
+import { escapeHtml, formatDateTime } from '../utils/formatter.js';
 import { showToast } from '../utils/notifications.js';
 
 let doorState = 'UNKNOWN';
+let deviceStatus = 'UNKNOWN';
+let lastSeenAt = null;
 
 export function getDoorState() {
   return doorState;
@@ -24,6 +26,29 @@ export function setDoorState(nextState) {
   return false;
 }
 
+export function getDeviceStatus() {
+  return deviceStatus;
+}
+
+export function setDeviceStatus(nextStatus, timestamp = new Date().toISOString()) {
+  const normalized = String(nextStatus || '').trim().toUpperCase();
+  if (normalized === 'ONLINE') {
+    deviceStatus = 'ONLINE';
+    lastSeenAt = timestamp;
+    return true;
+  }
+  if (normalized === 'OFFLINE') {
+    deviceStatus = 'OFFLINE';
+    return true;
+  }
+  if (normalized === 'UNKNOWN') {
+    deviceStatus = 'UNKNOWN';
+    lastSeenAt = null;
+    return true;
+  }
+  return false;
+}
+
 function getDoorDisplay(state) {
   if (state === 'UNLOCKED') {
     return { value: 'Terbuka', badgeText: 'UNLOCKED', badgeType: 'warning' };
@@ -32,6 +57,32 @@ function getDoorDisplay(state) {
     return { value: 'Terkunci', badgeText: 'LOCKED', badgeType: 'success' };
   }
   return { value: 'Belum diketahui', badgeText: 'MENUNGGU STATUS', badgeType: 'neutral' };
+}
+
+function getDeviceDisplay(status, deviceId, seenAt) {
+  if (status === 'ONLINE') {
+    const timeText = seenAt ? formatDateTime(seenAt) : '-';
+    return {
+      value: 'Online',
+      badgeText: 'ONLINE',
+      badgeType: 'success',
+      subtitle: `ID: ${deviceId} • Aktif: ${timeText}`,
+    };
+  }
+  if (status === 'OFFLINE') {
+    return {
+      value: 'Offline',
+      badgeText: 'OFFLINE',
+      badgeType: 'danger',
+      subtitle: `ID: ${deviceId} • Perangkat terputus`,
+    };
+  }
+  return {
+    value: 'Belum diketahui',
+    badgeText: 'MENUNGGU ESP32',
+    badgeType: 'neutral',
+    subtitle: `ID: ${deviceId} • Belum ada sinyal dari perangkat`,
+  };
 }
 
 function getMqttDisplay(status) {
@@ -71,6 +122,7 @@ export async function renderDashboard(container, runtimeConfig = null) {
   const mqttStatus = mqttService.getStatus();
   const mqttDisplay = getMqttDisplay(mqttStatus);
   const doorDisplay = getDoorDisplay(doorState);
+  const deviceDisplay = getDeviceDisplay(deviceStatus, deviceId, lastSeenAt);
 
   const cardsSubtitle = !stats.configured
     ? 'Supabase belum dikonfigurasi'
@@ -91,6 +143,13 @@ export async function renderDashboard(container, runtimeConfig = null) {
       subtitle: topics.STATUS ? `Topik: ${topics.STATUS}` : 'Topik status belum dimuat',
       badgeText: doorDisplay.badgeText,
       badgeType: doorDisplay.badgeType,
+    }),
+    createStatusCard({
+      title: 'Status Perangkat ESP32',
+      value: deviceDisplay.value,
+      subtitle: deviceDisplay.subtitle,
+      badgeText: deviceDisplay.badgeText,
+      badgeType: deviceDisplay.badgeType,
     }),
     createStatusCard({
       title: 'Koneksi MQTT',

@@ -4,7 +4,7 @@ import { getSupabaseClient } from './services/supabase.js';
 import { mqttService } from './services/mqtt.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderNavbar, updateNavbarMqttStatus } from './components/navbar.js';
-import { renderDashboard, setDoorState } from './pages/dashboard.js';
+import { renderDashboard, setDeviceStatus, setDoorState } from './pages/dashboard.js';
 import { renderManageCards } from './pages/manage-cards.js';
 import { renderAccessLogs } from './pages/access-logs.js';
 import { debugError, debugLog, showToast } from './utils/notifications.js';
@@ -80,10 +80,22 @@ async function navigate(route) {
 function handleStatusMessage(rawMessage) {
   try {
     const payload = JSON.parse(rawMessage);
-    if (!payload || typeof payload.status !== 'string') return;
+    if (!payload || typeof payload !== 'object') return;
 
-    const updated = setDoorState(payload.status);
-    if (updated && currentRoute === 'dashboard') {
+    const statusStr = typeof payload.status === 'string' ? payload.status.trim().toUpperCase() : '';
+    let changed = false;
+
+    if (payload.online === false || statusStr === 'OFFLINE') {
+      changed = setDeviceStatus('OFFLINE') || changed;
+    } else if (payload.online === true || ['LOCKED', 'UNLOCKED', 'ONLINE'].includes(statusStr)) {
+      changed = setDeviceStatus('ONLINE') || changed;
+    }
+
+    if (statusStr === 'LOCKED' || statusStr === 'UNLOCKED') {
+      changed = setDoorState(statusStr) || changed;
+    }
+
+    if (changed && currentRoute === 'dashboard') {
       const contentContainer = document.getElementById('app-content');
       renderDashboard(contentContainer, runtimeConfig);
     }
@@ -96,6 +108,8 @@ function handleEventMessage(rawMessage) {
   try {
     const payload = JSON.parse(rawMessage);
     if (!payload || typeof payload.event !== 'string') return;
+
+    setDeviceStatus('ONLINE');
 
     const eventName = payload.event.toUpperCase();
     const uidText = payload.card_uid || payload.uid || '-';
@@ -127,6 +141,9 @@ function setupMqttListeners(config) {
 
   mqttService.onStatusChange((status) => {
     debugLog('CP-APP-MQTT', 'Perubahan status MQTT.', { status });
+    if (status === 'disconnected' || status === 'offline' || status === 'error') {
+      setDeviceStatus('UNKNOWN');
+    }
     updateNavbarMqttStatus(status);
     if (currentRoute === 'dashboard') {
       const contentContainer = document.getElementById('app-content');

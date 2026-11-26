@@ -63,7 +63,13 @@ Buka `js/config/config.js` dan sesuaikan dengan kredensial deployment Anda:
    - Nonaktifkan public sign-up pada Supabase Auth jika hanya admin yang dibuat secara manual yang boleh login.
 
 2. **MQTT (WebSocket Secure / WSS — EMQX)**
-   - Isi `MQTT.BROKER_URL` dengan endpoint **WebSocket Secure (`wss://`)** dari deployment EMQX Anda (beserta port dan path WSS yang benar), atau simpan di tabel `app_config` (`mqtt_wss_url`, `mqtt_username`, `mqtt_password`) agar dimuat setelah admin login.
+   - Konfigurasi MQTT website diambil secara otomatis dari tabel `app_config` di Supabase melalui `loadAppConfig(supabase)` setelah admin login, dengan 7 key wajib:
+     - `device_id` (contoh: `door01`)
+     - `mqtt_ws_url` (endpoint WSS EMQX, misal `wss://<host>:8084/mqtt`)
+     - `mqtt_username` & `mqtt_password` (akun MQTT khusus website, **bukan** akun ESP32)
+     - `mqtt_topic_command` (`smartdoor/door01/command`)
+     - `mqtt_topic_status` (`smartdoor/door01/status`)
+     - `mqtt_topic_event` (`smartdoor/door01/event`)
    - Gunakan **akun MQTT khusus website** dengan ACL minimum:
      - Publish: `smartdoor/door01/command`
      - Subscribe: `smartdoor/door01/status`
@@ -71,7 +77,7 @@ Buka `js/config/config.js` dan sesuaikan dengan kredensial deployment Anda:
    - **Jangan** gunakan kredensial MQTT milik ESP32 di frontend.
    - Format payload JSON:
      - Command: `{"command":"UNLOCK"}`
-     - Status (retained): `{"status":"LOCKED"}` atau `{"status":"UNLOCKED"}`
+     - Status pintu (retained): `{"status":"LOCKED"}` atau `{"status":"UNLOCKED"}` (mendukung LWT perangkat `{"status":"OFFLINE"}` atau `{"online":false}` untuk indikator status ESP32 di dashboard)
      - Event: `{"event":"RFID_ACCESS_GRANTED","card_uid":"..."}` / `{"event":"RFID_ACCESS_DENIED","card_uid":"..."}`
 
 3. **Autentikasi**
